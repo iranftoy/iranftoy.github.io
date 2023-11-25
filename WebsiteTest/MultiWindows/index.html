@@ -6,7 +6,8 @@
         <title>Document</title>
         <style>
             :root {
-
+                --offset-x: 0px;
+                --offset-y: 0px;
             }
 
             body {
@@ -22,19 +23,36 @@
                 background-size: cover;
                 border-radius: 50%;
                 position: absolute;
-                top: 100px;
-                left: 100px;
+                top: calc(100px + var(--offset-y));
+                left: calc(100px + var(--offset-x));
             }
         </style>
     </head>
     <body>
         <div class="circle">
             <script>
+                const circle = document.querySelector(".circle");
+                let availTop = 0;
+                let availLeft = 0;
                 console.log(window.screenX, window.screenY);
-                document.querySelector('.circle').addEventListener('click', async () => {
+                (async () => {
                     const screenDetails = await window.getScreenDetails();
-                    console.log(screenDetails);
-                });
+
+                    availTop = screenDetails.currentScreen.availTop;
+                    availLeft = screenDetails.currentScreen.availLeft;
+
+                    window.requestAnimationFrame(update);
+                })();
+                
+                function update() {
+                    const screenX = window.screenX;
+                    const screenY = window.screenY;
+
+                    circle.style.setProperty("--offset-x", `${availLeft - screenX}px`);
+                    circle.style.setProperty("--offset-y", `${availTop - screenY}px`);
+
+                    window.requestAnimationFrame(update);
+                }
             </script>
         </div>
     </body>
