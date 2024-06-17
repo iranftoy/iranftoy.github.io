@@ -1,0 +1,2 @@
+User-agent: *
+Sitemap: https://iranftoy.github.io/sitemap.xml
