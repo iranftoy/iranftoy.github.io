@@ -1,0 +1,178 @@
+body {
+    font-family: -apple-system, system-ui, sans-serif;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 0 20px;
+    color: #333;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.encryption-group {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 0.25rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.required::after {
+    content: "*";
+    color: #dc3545;
+    margin-left: 0.2rem;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    margin-top: 0.25rem;
+    transition: border-color 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+button.primary {
+    background-color: #007bff;
+    color: white;
+}
+
+button.primary:hover {
+    background-color: #0056b3;
+}
+
+.key-management {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.key-management input {
+    flex: 1;
+    width: 300px;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    width: 90%;
+    max-width: 500px;
+    max-width: 400px;
+}
+
+#timerStatus {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: #e9ecef;
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
+.critical-warning {
+    padding: 1rem;
+    background: #fff3cd;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+}
+/* 新增样式 */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.message-type-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.radio-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.message-type {
+    padding: 0.5rem 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    background: white;
+    color: #333;
+    transition: all 0.2s;
+}
+
+.message-type.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+#volumeControl {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#volumeControl input {
+    width: 80px;
+    padding: 0.5rem;
+}
+
+.schedule-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.key-management {
+    gap: 0.5rem;
+}
+
+.key-action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: 0.5rem;
+}

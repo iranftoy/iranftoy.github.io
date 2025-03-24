@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bark消息推送工具</title>
+    <style>
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            box-sizing: border-box;
+        }
+
+        .required::after {
+            content: "*";
+            color: #dc3545;
+            margin-left: 0.2rem;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.25rem;
+            display: none;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .key-management {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        #deviceKey {
+            width: calc(100% - 170px);
+        }
+
+        .schedule-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #scheduleTime {
+            width: auto;
+        }
+
+        #timerStatus {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            background-color: #e2e3e5;
+        }
+
+        .combo-box {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .radio-group label {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 1rem;
+        }
+
+        .radio-group input[type="radio"] {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .key-management button {
+            flex-shrink: 0;
+        }
+
+        .critical-warning {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #fff3cd;
+            border-radius: 0.25rem;
+            display: none;
+        }
+
+        .volume-group {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            margin-top: 0.5rem;
+        }
+
+        #volume {
+            width: 80px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bark消息推送</h1>
+    
+    <form id="messageForm">
+        <div class="form-group">
+            <label class="required">设备Key</label>
+            <div class="key-management">
+                <div class="combo-box">
+                    <input list="deviceKeys" 
+                            id="deviceKey" 
+                            required
+                            placeholder="选择或输入设备Key"
+                            autocomplete="off">
+                    <datalist id="deviceKeys">
+                        <option value="">请选择设备Key</option>
+                    </datalist>
+                </div>
+                <button type="button" onclick="addPresetKey()">添加</button>
+                <button type="button" onclick="editPresetKey()">编辑</button>
+                <button type="button" onclick="removePresetKey()">删除</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="title">标题</label>
+            <input type="text" id="title">
+        </div>
+
+        <div class="form-group">
+            <label class="required" for="body">内容</label>
+            <textarea id="body" rows="3" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="url">跳转链接</label>
+            <input type="url" id="url" placeholder="https://example.com">
+        </div>
+
+        <div class="form-group">
+            <label for="group">分组</label>
+            <input type="text" id="group">
+        </div>
+
+        <div class="form-group">
+            <label for="icon">图标URL</label>
+            <input type="url" id="icon" placeholder="https://example.com/icon.png">
+        </div>
+
+        <div class="form-group">
+            <label for="sound">提示音</label>
+            <select id="sound">
+                <option value="">默认</option>
+                <option value="alarm">警报</option>
+                <option value="anticlock">反时钟</option>
+                <option value="bell">铃声</option>
+                <option value="birdsong">鸟鸣</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>消息类型</label>
+            <div class="radio-group">
+                <label>
+                    <input type="radio" name="level" value="active" checked> 主动提醒
+                </label>
+                <label>
+                    <input type="radio" name="level" value="timeSensitive"> 时效性通知
+                </label>
+                <label>
+                    <input type="radio" name="level" value="passive"> 被动提醒
+                </label>
+                <label>
+                    <input type="radio" name="level" value="critical"> 重要警告
+                </label>
+            </div>
+            <div class="volume-group">
+                <label for="volume">警报音量 (0-10):</label>
+                <input type="number" id="volume" min="0" max="10" value="5">
+            </div>
+            <div class="critical-warning">
+                重要警告会忽略静音设置和勿扰模式，无论设备是否静音，通知都会提示并播放声音
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>定时发送</label>
+            <div class="schedule-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="scheduleCheck">
+                    <label for="scheduleCheck">启用定时</label>
+                </div>
+                <input type="datetime-local" id="scheduleTime" disabled>
+            </div>
+        </div>
+
+        <button type="submit">发送消息</button>
+    </form>
+
+    <div id="result"></div>
+    <div id="timerStatus"></div>
+
+    <script>
+        let presetKeys = JSON.parse(localStorage.getItem('barkPresetKeys')) || [];
+        let timeoutId = null;
+        let intervalId = null;
+
+        // 初始化预设Key
+        function initPresetKeys() {
+            const datalist = document.getElementById('deviceKeys');
+            datalist.innerHTML = '<option value="">请选择设备Key</option>';
+            presetKeys.forEach(key => {
+                const option = document.createElement('option');
+                option.value = key;
+                datalist.appendChild(option);
+            });
+        }
+
+        // 添加预设Key
+        function addPresetKey() {
+            const key = document.getElementById('deviceKey').value.trim();
+            if (key && !presetKeys.includes(key)) {
+                presetKeys.push(key);
+                localStorage.setItem('barkPresetKeys', JSON.stringify(presetKeys));
+                initPresetKeys();
+                document.getElementById('deviceKey').value = key;
+            }
+        }
+
+        // 编辑预设Key
+        function editPresetKey() {
+            const oldKey = document.getElementById('deviceKey').value.trim();
+            if (!presetKeys.includes(oldKey)) return;
+
+            const newKey = prompt('请输入新的设备Key', oldKey);
+            if (newKey && newKey !== oldKey) {
+                const index = presetKeys.indexOf(oldKey);
+                presetKeys[index] = newKey.trim();
+                localStorage.setItem('barkPresetKeys', JSON.stringify(presetKeys));
+                initPresetKeys();
+                document.getElementById('deviceKey').value = newKey;
+            }
+        }
+
+        // 删除预设Key
+        function removePresetKey() {
+            const key = document.getElementById('deviceKey').value.trim();
+            presetKeys = presetKeys.filter(k => k !== key);
+            localStorage.setItem('barkPresetKeys', JSON.stringify(presetKeys));
+            initPresetKeys();
+            document.getElementById('deviceKey').value = '';
+        }
+
+        // 定时发送处理
+        function scheduleSend(apiUrl) {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+
+            const scheduleTime = new Date(document.getElementById('scheduleTime').value);
+            const now = new Date();
+            let diff = scheduleTime - now;
+
+            if (diff < 0) {
+                alert('请选择未来的时间');
+                return;
+            }
+
+            // 实时更新倒计时
+            function updateCountdown() {
+                diff -= 1000;
+                if (diff <= 0) {
+                    clearInterval(intervalId);
+                    updateTimerStatus('消息发送中...');
+                } else {
+                    const seconds = Math.floor(diff / 1000);
+                    const mins = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    updateTimerStatus(`剩余时间：${mins}分${secs.toString().padStart(2, '0')}秒`);
+                }
+            }
+
+            timeoutId = setTimeout(async () => {
+                try {
+                    const response = await fetch(apiUrl);
+                    const result = await response.json();
+                    handleResponse(response, result);
+                    updateTimerStatus('消息已发送');
+                    clearInterval(intervalId);
+                } catch (error) {
+                    handleError(error);
+                }
+            }, diff);
+
+            intervalId = setInterval(updateCountdown, 1000);
+            updateCountdown();
+        }
+
+        function updateTimerStatus(text) {
+            document.getElementById('timerStatus').textContent = text;
+        }
+
+        // 初始化
+        initPresetKeys();
+        
+        // 监听消息类型变化
+        document.querySelectorAll('input[name="level"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const isCritical = e.target.value === 'critical';
+                document.querySelector('.volume-group').style.display = isCritical ? 'flex' : 'none';
+                document.querySelector('.critical-warning').style.display = isCritical ? 'block' : 'none';
+            });
+        });
+
+        // 定时发送切换
+        document.getElementById('scheduleCheck').addEventListener('change', (e) => {
+            document.getElementById('scheduleTime').disabled = !e.target.checked;
+        });
+
+        // 表单提交
+        document.getElementById('messageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const deviceKey = document.getElementById('deviceKey').value.trim();
+            const title = document.getElementById('title').value.trim();
+            const body = document.getElementById('body').value.trim();
+            
+            const params = {
+                url: document.getElementById('url').value.trim(),
+                group: document.getElementById('group').value.trim(),
+                icon: document.getElementById('icon').value.trim(),
+                sound: document.getElementById('sound').value,
+                level: document.querySelector('input[name="level"]:checked').value,
+                volume: document.getElementById('volume').value
+            };
+
+            // 构建请求URL
+            let apiUrl = `https://api.day.app/${encodeURIComponent(deviceKey)}/`;
+            if (title) apiUrl += `${encodeURIComponent(title)}/`;
+            apiUrl += encodeURIComponent(body);
+
+            // 添加查询参数
+            const queryParams = [];
+            Object.keys(params).forEach(key => {
+                if (params[key]) {
+                    if (key === 'volume' && params.level !== 'critical') return;
+                    queryParams.push(`${key}=${encodeURIComponent(params[key])}`);
+                }
+            });
+            
+            // 特殊处理重要警告参数
+            if (params.level === 'critical') {
+                const volume = Math.min(10, Math.max(0, params.volume));
+                queryParams.push(`level=critical&volume=${volume}`);
+            }
+
+            if (queryParams.length > 0) {
+                apiUrl += `?${queryParams.join('&')}`;
+            }
+
+            // 判断是否定时发送
+            if (document.getElementById('scheduleCheck').checked) {
+                scheduleSend(apiUrl);
+            } else {
+                try {
+                    const response = await fetch(apiUrl);
+                    const result = await response.json();
+                    handleResponse(response, result);
+                } catch (error) {
+                    handleError(error);
+                }
+            }
+        });
+
+        // 处理响应
+        function handleResponse(response, result) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.classList.remove('error', 'success');
+            
+            if (response.ok) {
+                resultDiv.classList.add('success');
+                resultDiv.innerHTML = `发送成功！<br>Code: ${result.code}<br>Message: ${result.message}`;
+            } else {
+                resultDiv.classList.add('error');
+                resultDiv.innerHTML = `发送失败：${result.message || '未知错误'}`;
+            }
+            resultDiv.style.display = 'block';
+        }
+
+        // 处理错误
+        function handleError(error) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.classList.add('error');
+            resultDiv.innerHTML = `请求失败：${error.message}`;
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
