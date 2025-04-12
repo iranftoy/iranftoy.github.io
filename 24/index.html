@@ -1,193 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>24点多人游戏</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        #timer {
-            font-size: 36px;
-            margin: 20px;
-        }
-        .red { color: red; }
-        .number-container {
-            display: flex;
-            gap: 20px;
-            margin: 30px;
-        }
-        .number-box {
-            background: #888;
-            padding: 30px;
-            border-radius: 15px;
-            font-size: 24px;
-            position: relative;
-        }
-        .player-label {
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            font-size: 12px;
-        }
-        #controls {
-            margin: 20px;
-        }
-        #score-board {
-            display: flex;
-            gap: 30px;
-            margin-top: 50px;
-        }
-        .player-score {
-            background: #eee;
-            padding: 15px;
-            border-radius: 10px;
-            min-width: 80px;
-            text-align: center;
-        }
-        .preview {
-            font-size: 0.8em;
-            color: #666;
-        }
-    </style>
+    <title>24点多人游戏 - 分文件版</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="timer">20.00</div>
-    <div id="number-container" class="number-container"></div>
-    <div id="controls">
-        <label>
-            <input type="checkbox" id="highNumbers"> 包含11-13
-        </label>
-        <div id="player-select">
-            <button onclick="startGame(2)">2人游戏</button>
-            <button onclick="startGame(3)">3人游戏</button>
-            <button onclick="startGame(4)">4人游戏</button>
-        </div>
+    <div id="stats">
+        <h3>统计信息</h3>
+        <p>平均时间: <span id="avgTime">0.00</span>s</p>
+        <p>最快时间: <span id="bestTime">0.00</span>s</p>
+        <p>解出率: <span id="solveRate">0%</span></p>
     </div>
-    <div id="score-board"></div>
 
-<script>
-let numbers = [];
-let players = 2;
-let scores = [0, 0, 0, 0];
-let timeLeft = 20;
-let timerId;
-let selectedPlayers = [];
-let lastEnterTime = 0;
+    <div id="game-area">
+        <div id="timer">20.00</div>
+        <div id="number-container" class="number-container"></div>
+        <div id="solution"></div>
+        <div id="controls">
+            <label>
+                <input type="checkbox" id="highNumbers"> 包含11-13
+            </label>
+            <div id="player-select">
+                <button onclick="startGame(2)">2人游戏</button>
+                <button onclick="startGame(3)">3人游戏</button>
+                <button onclick="startGame(4)">4人游戏</button>
+            </div>
+        </div>
+        <div id="score-board"></div>
+    </div>
 
-function generateNumbers() {
-    numbers = [];
-    const hasHigh = document.getElementById('highNumbers').checked;
-    for(let i=0; i<4; i++) {
-        numbers.push(Math.floor(Math.random()*(hasHigh ? 13 : 10) + 1));
-    }
-    displayNumbers();
-}
-
-function displayNumbers() {
-    const container = document.getElementById('number-container');
-    container.innerHTML = numbers.map(n => 
-        `<div class="number-box">
-            <span class="player-label">${n}</span>
-            ${n}
-         </div>`
-    ).join('');
-}
-
-function updateTimer() {
-    const timer = document.getElementById('timer');
-    timer.textContent = timeLeft.toFixed(2);
-    timer.className = timeLeft <= 5 ? 'red' : '';
-}
-
-function startGame(numPlayers) {
-    players = numPlayers;
-    document.getElementById('player-select').style.display = 'none';
-    scores = new Array(players).fill(0);
-    setupScoreBoard();
-    startRound();
-}
-
-function startRound() {
-    generateNumbers();
-    timeLeft = 20;
-    selectedPlayers = [];
-    lastEnterTime = 0;
-    updateTimer();
-    updateScorePreview();
-    
-    if(timerId) clearInterval(timerId);
-    timerId = setInterval(() => {
-        timeLeft -= 0.01;
-        if(timeLeft <= 0) endRound();
-        updateTimer();
-    }, 10);
-}
-
-function setupScoreBoard() {
-    const board = document.getElementById('score-board');
-    board.innerHTML = Array.from({length: players}, (_,i) => 
-        `<div class="player-score">
-            玩家${i+1}<br>
-            <span id="score${i}">0</span>
-            <div class="preview" id="preview${i}"></div>
-         </div>`
-    ).join('');
-}
-
-document.addEventListener('keydown', (e) => {
-    if(e.key === 'Enter') {
-        const now = Date.now();
-        if(now - lastEnterTime < 500) {
-            endRound();
-        } else {
-            confirmScore();
-        }
-        lastEnterTime = now;
-    }
-    
-    const playerIndex = ['1','2','3','4'].indexOf(e.key);
-    if(playerIndex !== -1 && playerIndex < players) {
-        if(!selectedPlayers.includes(playerIndex)) {
-            selectedPlayers.push(playerIndex);
-            updateScorePreview();
-        }
-    }
-});
-
-function confirmScore() {
-    if(selectedPlayers.length === 0) return;
-    
-    const points = selectedPlayers.length === 3 ? [2,1,1] : 
-                  selectedPlayers.length === 2 ? [2,2] : [4];
-    
-    selectedPlayers.forEach((p,i) => {
-        scores[p] += points[i] || 2;
-    });
-    
-    updateScores();
-    endRound();
-}
-
-function updateScorePreview() {
-    for(let i=0; i<players; i++) {
-        const preview = document.getElementById(`preview${i}`);
-        preview.textContent = selectedPlayers.includes(i) ? '✅' : '';
-    }
-}
-
-function updateScores() {
-    scores.forEach((s,i) => {
-        document.getElementById(`score${i}`).textContent = s;
-    });
-}
-
-function endRound() {
-    clearInterval(timerId);
-    setTimeout(startRound, 2000);
-}
-</script>
+    <script src="script.js"></script>
 </body>
 </html>
