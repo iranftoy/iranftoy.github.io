@@ -1,6 +1,7 @@
 let numbers = [];
 let players = 2;
 let scores = [];
+let ans;
 let timeLeft = 20;
 let timerId;
 let selectedPlayers = [];
@@ -128,7 +129,8 @@ function generateNumbers() {
     do {
         numbers = Array.from({length:4}, () => 
             Math.floor(Math.random()*(hasHigh ? 13 : 10) + 1))
-    } while(!calculateSolutions([...numbers]));
+            ans = calculateSolutions([...numbers]);
+    } while(!ans.success);
     displayNumbers();
 }
 
@@ -251,7 +253,7 @@ function updateScorePreview() {
 
 function showSolution() {
     
-    document.getElementById('solution').textContent = '';
+    document.getElementById('solution').textContent = ans.expression;
 }
 
 // 初始化游戏
