@@ -148,7 +148,7 @@ function showStats() {
     document.getElementById('avgTime').textContent = 
         (gameStats.total ? (gameStats.totalTime / gameStats.total).toFixed(2) : 0);
     document.getElementById('bestTime').textContent = 
-        (gameStats.bestTime === Infinity ? 0 : gameStats.bestTime.toFixed(2);
+        (gameStats.bestTime === Infinity ? 0 : gameStats.bestTime);
     document.getElementById('solveRate').textContent = 
         (gameStats.total ? ((gameStats.solved / gameStats.total)*100).toFixed(1) : 0) + '%';
 }
