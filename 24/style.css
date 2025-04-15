@@ -5,6 +5,12 @@ body {
     padding: 20px;
 }
 
+button {
+    width: 100px;
+    height: 50px;
+    border: blue;
+}
+
 #stats {
     width: 200px;
     padding: 20px;
