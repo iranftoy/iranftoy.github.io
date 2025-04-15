@@ -41,35 +41,88 @@ function updateScores() {
 
 function calculateSolutions(nums) {
     const ops = ['+', '-', '*', '/'];
-    
+    let answer = '无解'; // 默认提示文本
+
     function dfs(arr) {
-        if(arr.length === 1) return Math.abs(arr[0] - 24) < 0.0001;
-        
-        for(let i=0; i<arr.length; i++) {
-            for(let j=0; j<arr.length; j++) {
-                if(i === j) continue;
-                const remaining = arr.filter((_,k) => k !== i && k !== j);
-                for(let op of ops) {
-                    let result;
+        if (arr.length === 1) {
+            const diff = Math.abs(arr[0].value - 24);
+            if (diff < 1e-6) {
+                // 去除最外层冗余括号
+                answer = arr[0].expr.replace(/^\((.*)\)$/, '$1');
+                return true;
+            }
+            return false;
+        }
+
+        for (let i = 0; i < arr.length; i++) {
+            for (let j = 0; j < arr.length; j++) {
+                if (i === j) continue;
+                const a = arr[i], b = arr[j];
+                
+                // 生成剩余数字数组
+                const remaining = [];
+                for (let k = 0; k < arr.length; k++) {
+                    if (k !== i && k !== j) remaining.push(arr[k]);
+                }
+
+                // 尝试所有运算符
+                for (const op of ops) {
+                    // 跳过无效除法
+                    if (op === '/' && b.value === 0) continue;
+                    
+                    // 计算数值结果
+                    let value;
                     try {
                         switch(op) {
-                            case '+': result = arr[i] + arr[j]; break;
-                            case '-': result = arr[i] - arr[j]; break;
-                            case '*': result = arr[i] * arr[j]; break;
-                            case '/': result = arr[j] !== 0 ? arr[i] / arr[j] : null; break;
+                            case '+': value = a.value + b.value; break;
+                            case '-': value = a.value - b.value; break;
+                            case '*': value = a.value * b.value; break;
+                            case '/': value = a.value / b.value; break;
                         }
                     } catch { continue; }
-                    if(result === null) continue;
-                    if(dfs([...remaining, result])) return true;
+
+                    // 生成表达式
+                    const expr = op === '*' || op === '+' 
+                        ? `${a.expr} ${op} ${b.expr}`  // 乘加无需强制括号
+                        : `(${a.expr} ${op} ${b.expr})`; // 减除需要括号
+                    
+                    // 递归处理新数组
+                    if (dfs([...remaining, { value, expr }])) {
+                        return true;
+                    }
                 }
             }
         }
         return false;
     }
-    
-    return dfs([...nums]);
+
+    // 执行计算
+    const hasSolution = dfs(nums.map(n => ({
+        value: n,
+        expr: n.toString()
+    })));
+
+    // 返回结果对象
+    return {
+        success: hasSolution,
+        expression: answer
+    };
 }
 
+/* 使用示例 */
+const testCases = [
+    [8, 3, 3, 8],   // 8/(3-(8/3))
+    [4, 1, 8, 7],   // 8*(7-4*1)
+    [1, 2, 3, 4],   // 1*2*3*4
+    [0, 0, 0, 0]    // 无解
+];
+
+testCases.forEach(nums => {
+    const result = calculateSolutions(nums);
+    console.log('输入:', nums.join(', '));
+    console.log('是否有解:', result.success);
+    console.log('解法:', result.expression + '\n');
+});
 function generateNumbers() {
     const hasHigh = document.getElementById('highNumbers').checked;
     do {
