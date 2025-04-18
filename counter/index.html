@@ -19,13 +19,16 @@
         }
 
         button {
-            padding: 15px;
-            font-size: 18px;
+            padding: 10px;
+            font-size: 16px;
             cursor: pointer;
             background-color: #4CAF50;
             color: white;
             border: none;
             border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         button:hover {
@@ -36,6 +39,8 @@
             background-color: #f44336;
             width: 100%;
             margin-top: 20px;
+            padding: 15px;
+            justify-content: center;
         }
 
         #resetBtn:hover {
@@ -49,19 +54,20 @@
             background-color: #f0f0f0;
             border-radius: 5px;
         }
+
+        .count-badge {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 3px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
     </style>
 </head>
 <body>
     <div id="counter">当前牌数：0</div>
     
-    <div class="buttons-container">
-        <!-- 生成3到K的按钮 -->
-        <script>
-            const cards = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2', '小王', '大王'];
-            cards.forEach(card => {
-                document.write(`<button onclick="updateCounter('${card}')">${card}</button>`);
-            });
-        </script>
+    <div class="buttons-container" id="buttonsContainer">
+        <!-- 按钮由JavaScript动态生成 -->
     </div>
 
     <button id="resetBtn" onclick="resetCounter()">清空计数器</button>
@@ -72,23 +78,41 @@
             'J': 0, 'Q': 0, 'K': 0, 'A': 0, '2': 0, '小王': 0, '大王': 0
         };
 
+        // 初始化按钮
+        function createButtons() {
+            const container = document.getElementById('buttonsContainer');
+            const cards = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2', '小王', '大王'];
+            
+            cards.forEach(card => {
+                const btn = document.createElement('button');
+                btn.innerHTML = `
+                    ${card}
+                    <span class="count-badge" id="count-${card}">0</span>
+                `;
+                btn.onclick = () => updateCounter(card);
+                container.appendChild(btn);
+            });
+        }
+
         function updateCounter(card) {
             counter[card]++;
+            document.getElementById(`count-${card}`).textContent = counter[card];
             updateDisplay();
         }
 
         function resetCounter() {
             for (let card in counter) {
                 counter[card] = 0;
+                document.getElementById(`count-${card}`).textContent = '0';
             }
             updateDisplay();
         }
 
         function updateDisplay() {
-            // 计算总牌数
             const total = Object.values(counter).reduce((a, b) => a + b, 0);
             document.getElementById('counter').innerHTML = `
                 当前牌数：${total}
+                ${total >= 54 ? '<br><span style="color: red">⚠️ 牌数超过标准副牌！</span>' : ''}
                 <br><br>
                 ${Object.entries(counter)
                     .filter(([_, count]) => count > 0)
@@ -96,6 +120,9 @@
                     .join('<br>')}
             `;
         }
+
+        // 初始化页面
+        createButtons();
     </script>
 </body>
-      </html>
+</html>
