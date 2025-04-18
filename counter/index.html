@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>斗地主牌组计数器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .buttons-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #resetBtn {
+            background-color: #f44336;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        #resetBtn:hover {
+            background-color: #da190b;
+        }
+
+        #counter {
+            font-size: 24px;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="counter">当前牌数：0</div>
+    
+    <div class="buttons-container">
+        <!-- 生成3到K的按钮 -->
+        <script>
+            const cards = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2', '小王', '大王'];
+            cards.forEach(card => {
+                document.write(`<button onclick="updateCounter('${card}')">${card}</button>`);
+            });
+        </script>
+    </div>
+
+    <button id="resetBtn" onclick="resetCounter()">清空计数器</button>
+
+    <script>
+        let counter = {
+            '3': 0, '4': 0, '5': 0, '6': 0, '7': 0, '8': 0, '9': 0, '10': 0,
+            'J': 0, 'Q': 0, 'K': 0, 'A': 0, '2': 0, '小王': 0, '大王': 0
+        };
+
+        function updateCounter(card) {
+            counter[card]++;
+            updateDisplay();
+        }
+
+        function resetCounter() {
+            for (let card in counter) {
+                counter[card] = 0;
+            }
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            // 计算总牌数
+            const total = Object.values(counter).reduce((a, b) => a + b, 0);
+            document.getElementById('counter').innerHTML = `
+                当前牌数：${total}
+                <br><br>
+                ${Object.entries(counter)
+                    .filter(([_, count]) => count > 0)
+                    .map(([card, count]) => `${card}：${count}张`)
+                    .join('<br>')}
+            `;
+        }
+    </script>
+</body>
+      </html>
