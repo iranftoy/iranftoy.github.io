@@ -178,7 +178,8 @@ function generateNumbers() {
         CurrentResult = solve24([...numbers]);
     } while(!CurrentResult.success);
     displayNumbers();
-    document.getElementById('curCount').textContent  = (CurrentResult.count);
+    document.getElementById('curCount').textContent = (CurrentResult.count);
+    document.getelementbyId('level').textContent    = (CurrentResult.count >= 100 ? '秒杀' : '中等');
 }
 
 function updateStats(solved, timeUsed) {
