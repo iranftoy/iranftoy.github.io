@@ -1,4 +1,5 @@
 let numbers = [];
+let difficulties = [];
 let players = 2;
 let currentResult;
 let level = '?';
@@ -182,12 +183,18 @@ function levelPadding() {
 
 function generateNumbers() {
     const hasHigh = document.getElementById('highNumbers').checked;
+    difficulties[0] = (document.getElementById('difficulty_supereasy').checked ? 'supereasy' : null);
+    difficulties[1] = (document.getElementById('difficulty_easy').checked ? 'easy' : null);
+    difficulties[2] = (document.getElementById('difficulty_medium').checked ? 'medium' : null);
+    difficulties[3] = (document.getElementById('difficulty_hard').checked ? 'hard' : null);
+    difficulties[4] = (document.getElementById('difficulty_insane').checked ? 'insane' : null);
+    
     do {
         numbers = Array.from({length:4}, () => 
             Math.floor(Math.random()*(hasHigh ? 13 : 10) + 1))
         currentResult = solve24([...numbers]);
         level = levelPadding();
-    } while(!currentResult.success || level != 'insane');
+    } while (currentResult.success ? !(difficulties.every(item => item === null) || difficulties.includes(level)) : true) 
     displayNumbers();
     document.getElementById('curCount').textContent = (currentResult.count);
     document.getElementById('level').textContent    = level;
