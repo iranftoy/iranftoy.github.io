@@ -1,6 +1,7 @@
 let numbers = [];
 let players = 2;
-let CurrentResult;
+let currentResult;
+let level = '?';
 let isSolutionShown = false;
 let scores = [];
 let timeLeft = 20;
@@ -11,7 +12,8 @@ let gameStats = {
     total: 0,
     solved: 0,
     totalTime: 0,
-    bestTime: 999
+    bestTime: 999,
+    option: 0
 };
 
 // 初始化统计
@@ -170,16 +172,25 @@ function solve24(numbers) {
 // 示例用法：
 console.log(solve24([3, 3, 8, 8]));
 
+function levelPadding() {
+    if(currentResult.count > 100) return 'supereasy';
+    if(currentResult.count > 50) return 'easy';
+    if(currentResult.count > 20) return 'medium';
+    if(currentResult.count > 2) return 'hard';
+    return 'insane';
+}
+
 function generateNumbers() {
     const hasHigh = document.getElementById('highNumbers').checked;
     do {
         numbers = Array.from({length:4}, () => 
             Math.floor(Math.random()*(hasHigh ? 13 : 10) + 1))
-        CurrentResult = solve24([...numbers]);
-    } while(!CurrentResult.success);
+        currentResult = solve24([...numbers]);
+        level = levelPadding();
+    } while(!currentResult.success || level != 'insane');
     displayNumbers();
-    document.getElementById('curCount').textContent = (CurrentResult.count);
-    document.getElementById('level').textContent    = (CurrentResult.count >= 100 ? '秒杀' : '中等');
+    document.getElementById('curCount').textContent = (currentResult.count);
+    document.getElementById('level').textContent    = level;
 }
 
 function updateStats(solved, timeUsed) {
@@ -187,7 +198,7 @@ function updateStats(solved, timeUsed) {
     if(solved) gameStats.solved++;
     gameStats.totalTime += timeUsed;
     if(solved && timeUsed < gameStats.bestTime) gameStats.bestTime = timeUsed;
-    
+    gameStats.option = hasHigh;
     localStorage.setItem('24game_stats', JSON.stringify(gameStats));
     showStats();
 }
@@ -201,7 +212,20 @@ function showStats() {
 function loadStats() {
     const saved = localStorage.getItem('24game_stats');
     if(saved) gameStats = JSON.parse(saved);
+    else gameStats = {
+        total: 0,
+        solved: 0,
+        totalTime: 0,
+        bestTime: 999,
+        option: 0
+    };
+    hasHigh = gameStats.option;
     showStats();
+}
+
+function clearStats() {
+    localStorage.clear();
+    loadStats();
 }
 
 document.addEventListener('keydown', (e) => {
@@ -259,6 +283,7 @@ function startRound() {
             if(timeLeft <= 0) {
                 clearInterval(timerId);
                 updateStats(false, 20);
+                timeLeft = 0;
                 showSolution();
             }
             updateTimer();
@@ -270,11 +295,11 @@ function displayNumbers() {
     const container = document.getElementById('number-container');
     container.innerHTML = numbers.map(n => 
         `<div class="number-box">
-            <span class="player-label">${n}</span>
             ${n}
          </div>`
     ).join('');
 }
+        //    <span class="player-label">${n}</span>
 
 function updateTimer() {
     const timer = document.getElementById('timer');
@@ -302,7 +327,7 @@ function updateScorePreview() {
 
 function showSolution() {
     
-    document.getElementById('solution').textContent = CurrentResult.answer;
+    document.getElementById('solution').textContent = currentResult.answer;
 }
 
 // 初始化游戏

@@ -12,6 +12,8 @@
         <p>解出率: <span id="solveRate">0%</span></p>
         <p>当前解法数: <span id="curCount">?</span></p>
         <p>等级: <span id="level">?</span></p>
+        
+        
     </div>
 
     <div id="game-area">
@@ -19,9 +21,7 @@
         <div id="number-container" class="number-container"></div>
         <div id="solution"></div>
         <div id="controls">
-            <label>
-                <input type="checkbox" id="highNumbers"> 包含11-13
-            </label>
+            
             <div id="player-select">
                 <button onclick="startGame(2)">2人游戏</button>
                 <button onclick="startGame(3)">3人游戏</button>
@@ -30,7 +30,15 @@
         </div>
         <div id="score-board"></div>
     </div>
-
+    <div id="options">
+        <h3>选项</h3>
+        <div id="controls">
+            <label>
+                <input type="checkbox" id="highNumbers"> 包含11-13
+            </label>
+            <button onclick="clearStats()">Clear localStorage</button>
+        </div>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
