@@ -237,15 +237,15 @@ function clearStats() {
 
 document.addEventListener('keydown', (e) => {
     if(e.key === 'Enter') {
+        if (isSolutionShown) {
+            isSolutionShown = false;
+            startRound();
+        }
         if(!isPaused) {
             clearInterval(timerId);
             isPaused = true;
             const timeUsed = 20 - timeLeft;
             updateStats(true, timeUsed);
-        }
-        else if (isSolutionShown) {
-            isSolutionShown = false;
-            startRound();
         }
         else {
             isPaused = false;
