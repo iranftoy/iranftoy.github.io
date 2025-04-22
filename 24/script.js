@@ -157,6 +157,7 @@ function solve24(numbers) {
                 const result = evaluator(perm, ops);
                 if (result && isApprox24(result.value)) {
                     solutions.add(result.expr.replace(/(\D)\.0/g, '$1')); // 移除整数后的.0
+                    console.log(result.expr.replace(/(\D)\.0/g, '$1'));
                 }
             }
         }
@@ -166,8 +167,7 @@ function solve24(numbers) {
     return {
         success: solutions.size > 0,
         answer: answer,
-        count: solutions.size,
-        fullsolution: solutions
+        count: solutions.size
     };
 }
 
@@ -191,13 +191,13 @@ function generateNumbers() {
     difficulties[4] = (document.getElementById('difficulty_insane').checked ? 'insane' : null);
     
     do {
+        console.clear();
         numbers = Array.from({length:4}, () => 
             Math.floor(Math.random()*(hasHigh ? 13 : 10) + 1))
         currentResult = solve24([...numbers]);
         level = levelPadding();
     } while (currentResult.success ? !(difficulties.every(item => item === null) || difficulties.includes(level)) : true) 
     displayNumbers();
-    for(let i = 0;i < currentResult.count;i++) console.log(Array.from(currentResult.solutions)[i]);
     document.getElementById('curCount').textContent = (currentResult.count);
     document.getElementById('level').textContent    = level;
 }
