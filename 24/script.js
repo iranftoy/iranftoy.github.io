@@ -197,7 +197,7 @@ function generateNumbers() {
         level = levelPadding();
     } while (currentResult.success ? !(difficulties.every(item => item === null) || difficulties.includes(level)) : true) 
     displayNumbers();
-    for(let i = 0;i < currentResult.count;i++) console.log(currentResult.solutions[i]);
+    for(let i = 0;i < currentResult.count;i++) console.log(Array.from(currentResult.solutions)[i]);
     document.getElementById('curCount').textContent = (currentResult.count);
     document.getElementById('level').textContent    = level;
 }
