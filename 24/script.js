@@ -166,7 +166,8 @@ function solve24(numbers) {
     return {
         success: solutions.size > 0,
         answer: answer,
-        count: solutions.size
+        count: solutions.size,
+        fullsolution: solutions
     };
 }
 
@@ -196,6 +197,7 @@ function generateNumbers() {
         level = levelPadding();
     } while (currentResult.success ? !(difficulties.every(item => item === null) || difficulties.includes(level)) : true) 
     displayNumbers();
+    for(let i = 0;i < currentResult.solutions.size;i++) console.log(currentResult.solutions[i]);
     document.getElementById('curCount').textContent = (currentResult.count);
     document.getElementById('level').textContent    = level;
 }
