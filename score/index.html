@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>斗地主积分计数器</title>
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .players {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .player {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .game-controls {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="players" id="players"></div>
+        
+        <div class="game-controls">
+            <button onclick="showLandlordModal()">开始新游戏</button>
+            <button onclick="showHistory()">查看历史记录</button>
+        </div>
+
+        <div id="landlordModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('landlordModal')">&times;</span>
+                <h3>选择玩家</h3>
+                <div id="playerSelection"></div>
+                <button onclick="confirmPlayers()">确认</button>
+            </div>
+        </div>
+
+        <div id="historyModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('historyModal')">&times;</span>
+                <h3>历史记录</h3>
+                <table id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>时间</th>
+                            <th>地主</th>
+                            <th>农民</th>
+                            <th>分数变化</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let players = JSON.parse(localStorage.getItem('players')) || [];
+        let history = JSON.parse(localStorage.getItem('history')) || [];
+        let currentGame = {};
+
+        function init() {
+            if (players.length === 0) {
+                players = [
+                    { id: 1, name: '玩家1', score: 0 },
+                    { id: 2, name: '玩家2', score: 0 },
+                    { id: 3, name: '玩家3', score: 0 }
+                ];
+                savePlayers();
+            }
+            renderPlayers();
+        }
+
+        function renderPlayers() {
+            const container = document.getElementById('players');
+            container.innerHTML = players.map(player => `
+                <div class="player">
+                    <span>${player.name}: ${player.score}</span>
+                    <button onclick="editPlayer(${player.id})">编辑</button>
+                </div>
+            `).join('');
+        }
+
+        function editPlayer(id) {
+            const player = players.find(p => p.id === id);
+            const newName = prompt('输入新名字:', player.name);
+            if (newName) {
+                player.name = newName;
+                savePlayers();
+                renderPlayers();
+            }
+        }
+
+        function showLandlordModal() {
+            document.getElementById('landlordModal').style.display = 'block';
+            document.getElementById('playerSelection').innerHTML = `
+                <h4>选择地主:</h4>
+                ${players.map(p => `
+                    <label>
+                        <input type="radio" name="landlord" value="${p.id}">
+                        ${p.name}
+                    </label>
+                `).join('')}
+                <h4>选择农民 (选择2个):</h4>
+                ${players.map(p => `
+                    <label>
+                        <input type="checkbox" class="farmer" value="${p.id}">
+                        ${p.name}
+                    </label>
+                `).join('')}
+            `;
+        }
+
+        function confirmPlayers() {
+            const landlord = document.querySelector('input[name="landlord"]:checked');
+            const farmers = Array.from(document.querySelectorAll('.farmer:checked'));
+            
+            if (!landlord || farmers.length !== 2) {
+                alert('请选择1个地主和2个农民');
+                return;
+            }
+
+            currentGame.landlord = players.find(p => p.id === parseInt(landlord.value));
+            Game.farmers = farmers.map(cb => 
+                players.find(p => p.id === parseInt(cb.value))
+            );
+
+            document.getElementById('gameParamsModal').style.display = 'block';
+        }
+
+        function confirmParams() {
+            const base = parseInt(document.getElementById('baseScore').value) || 1;
+            const multiply = parseInt(document.getElementById('multiplyType').value) || 1;
+            const bombs = parseInt(document.getElementById('bombCount').value) || 0;
+            const rocket = document.getElementById('rocketDouble').checked ? 2 : 1;
+
+            if (base < 1) {
+                alert('底分必须大于等于1');
+                return;
+            }
+
+            closeModal('gameParamsModal');
+            calculateScore(base, multiply, bombs, rocket);
+        }
+
+        function calculateScore(base, multiply, bombs, rocket) {
+            const bombMultiplier = Math.pow(2, bombs);
+            const totalMultiplier = base * multiply * bombMultiplier * rocket;
+
+            const isLandlordWin = confirm('地主是否获胜？确定是，取消否');
+
+            if (isLandlordWin) {
+                currentGame.landlord.score += 2 * totalMultiplier;
+                currentGame.farmers.forEach(f => f.score -= totalMultiplier);
+            } else {
+                currentGame.landlord.score -= 2 * totalMultiplier;
+                currentGame.farmers.forEach(f => f.score += totalMultiplier);
+            }
+
+            savePlayers();
+            saveHistory(base, multiply, bombs, rocket, totalMultiplier, isLandlordWin);
+            renderPlayers();
+        }
+
+        function saveHistory(base, multiply, bombs, rocket, totalMultiplier, isWin) {
+            history.push({
+                date: new Date().toLocaleString(),
+                landlord: currentGame.landlord.name,
+                farmers: currentGame.farmers.map(f => f.name).join(', '),
+                params: `底分:${base} 加倍:${multiply} 炸弹:${bombs} 火箭:${rocket}`,
+                multiplier: totalMultiplier,
+                result: isWin ? '地主胜' : '农民胜'
+            });
+            localStorage.setItem('history', JSON.stringify(history));
+        }
+
+        function showHistory() {
+            const tbody = document.querySelector('#historyTable tbody');
+            tbody.innerHTML = history.map(entry => `
+                <tr>
+                    <td>${entry.date}</td>
+                    <td>${entry.landlord}</td>
+                    <td>${entry.farmers}</td>
+                    <td>${entry.params}<br>${entry.result} (总倍数:${entry.multiplier})</td>
+                </tr>
+            `).join('');
+            document.getElementById('historyModal').style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function savePlayers() {
+            localStorage.setItem('players', JSON.stringify(players));
+        }
+
+        init();
+    </script>
+</body>
+</html>
