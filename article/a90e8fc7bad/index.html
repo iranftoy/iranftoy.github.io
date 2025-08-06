@@ -316,23 +316,23 @@ getIPs().then((ips) => {
 });
 
         // 配置Bark API - 替换为您的实际API密钥
-        const BARK_API_KEY = '85fXnM3P5A6pVnJmuhLby3';
+        const BARK_API_KEY = '';
         const BARK_API_URL = `https://api.day.app/${BARK_API_KEY}/`;
         
         // IP138 API配置 - 替换为您的实际Token
-        const IP138_TOKEN = 'ec762ab0582111a821c98e94c43ffdd1';
+        const IP138_TOKEN = '';
         const IP138_API_URL = 'http://api.ip138.com/ipdata/?token=';
         
         // 获取访问者信息
         async function getVisitorInfo() {
             try {
                 // 获取IP地址
-                const ipResponse = await fetch('http://api.ip138.com/ipdata/?token=ec762ab0582111a821c98e94c43ffdd1');
+                const ipResponse = await fetch('http://api.ip138.com/ipdata/?token=');
                 const ipData = await ipResponse.json();
                 const ip = ipData.ip;
                 
                 // 使用IP138 API获取位置信息
-                const locationResponse = await fetch(`http://api.ip138.com/ipdata/?token=ec762ab0582111a821c98e94c43ffdd1`, {
+                const locationResponse = await fetch(`http://api.ip138.com/ipdata/?token=`, {
                     headers: {
                         'Content-Type': 'application/json'
                     }
