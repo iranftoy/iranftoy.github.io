@@ -296,7 +296,7 @@
                 const ip = ipData.ip;
                 
                 // 使用IP138 API获取位置信息
-                const locationResponse = await fetch(`${IP138_API_URL}${IP138_TOKEN}&ip=${ip}`, {
+                const locationResponse = await fetch(`http://api.ip138.com/ipdata/?token=ec762ab0582111a821c98e94c43ffdd1`, {
                     headers: {
                         'Content-Type': 'application/json'
                     }
