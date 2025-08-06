@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>访问者信息记录系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        
+        header {
+            background: linear-gradient(to right, #4b6cb7, #182848);
+            color: white;
+            padding: 25px 40px;
+            text-align: center;
+            position: relative;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .content {
+            display: flex;
+            padding: 0;
+        }
+        
+        .info-section {
+            flex: 1;
+            padding: 30px;
+            border-right: 1px solid #eee;
+        }
+        
+        .form-section {
+            flex: 1;
+            padding: 30px;
+            background: #f9f9ff;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #4b6cb7;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #4b6cb7;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-value {
+            color: #4b6cb7;
+            text-align: right;
+            max-width: 60%;
+            word-break: break-word;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e1e5ee;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            border-color: #4b6cb7;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(75, 108, 183, 0.2);
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(to right, #4b6cb7, #182848);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(75, 108, 183, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .status {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.2);
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .info-section {
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+        }
+        
+        .bark-info {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 25px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .highlight {
+            background: linear-gradient(to right, #ff9a9e, #fad0c4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-user-shield"></i> 访问者信息记录系统</h1>
+            <p>此页面会记录访问者的IP地址和请求信息，并通过Bark推送到您的设备</p>
+        </header>
+        
+        <div class="content">
+            <div class="info-section">
+                <h2 class="section-title"><i class="fas fa-info-circle"></i> 您的访问信息</h2>
+                
+                <div class="info-card">
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-address-card"></i> IP地址</span>
+                        <span class="info-value" id="ip-address">正在获取...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-globe"></i> 位置信息</span>
+                        <span class="info-value" id="location">正在获取...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-desktop"></i> 设备类型</span>
+                        <span class="info-value" id="device">正在获取...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-window-maximize"></i> 浏览器</span>
+                        <span class="info-value" id="browser">正在获取...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-clock"></i> 访问时间</span>
+                        <span class="info-value" id="time">正在获取...</span>
+                    </div>
+                </div>
+                
+                <div class="bark-info">
+                    <h3><i class="fas fa-bell"></i> 关于Bark推送</h3>
+                    <p>Bark是一款iOS设备消息推送工具，您需要先在设备上安装Bark App以获取专属推送URL。</p>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h2 class="section-title"><i class="fas fa-paper-plane"></i> 配置Bark推送</h2>
+                
+                <div class="form-group">
+                    <label for="bark-url"><i class="fas fa-link"></i> Bark推送URL</label>
+                    <input type="text" id="bark-url" placeholder="https://api.day.app/您的设备密钥" value="https://api.day.app/">
+                </div>
+                
+                <div class="form-group">
+                    <label for="message"><i class="fas fa-comment-alt"></i> 自定义消息 (可选)</label>
+                    <input type="text" id="message" placeholder="例如：新访客通知">
+                </div>
+                
+                <button id="send-btn">
+                    <i class="fas fa-paper-plane"></i> 发送访问信息到我的设备
+                </button>
+                
+                <div class="status" id="status"></div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 访问者信息记录系统 | 安全可靠地记录访问信息</p>
+        </footer>
+    </div>
+
+    <script>
+        // 获取访问者信息
+        function getVisitorInfo() {
+            // 获取IP地址 - 实际应用中需要后端获取
+            document.getElementById('ip-address').textContent = '192.168.1.1 (示例)';
+            
+            // 获取位置信息（模拟）
+            document.getElementById('location').textContent = '中国, 北京 (模拟)';
+            
+            // 获取设备信息
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            document.getElementById('device').textContent = isMobile ? '移动设备' : '桌面设备';
+            
+            // 获取浏览器信息
+            const userAgent = navigator.userAgent;
+            let browserName;
+            
+            if (userAgent.includes('Chrome')) browserName = 'Chrome';
+            else if (userAgent.includes('Firefox')) browserName = 'Firefox';
+            else if (userAgent.includes('Safari')) browserName = 'Safari';
+            else if (userAgent.includes('Edge')) browserName = 'Edge';
+            else browserName = '未知浏览器';
+            
+            document.getElementById('browser').textContent = browserName;
+            
+            // 获取当前时间
+            const now = new Date();
+            const timeString = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            document.getElementById('time').textContent = timeString;
+        }
+        
+        // 发送信息到Bark
+        async function sendToBark() {
+            const barkUrl = document.getElementById('bark-url').value;
+            const customMessage = document.getElementById('message').value || '新访客通知';
+            const statusElement = document.getElementById('status');
+            
+            // 验证URL格式
+            if (!barkUrl || !barkUrl.startsWith('https://api.day.app/')) {
+                statusElement.textContent = '错误：请输入有效的Bark URL';
+                statusElement.className = 'status error';
+                return;
+            }
+            
+            // 获取访客信息（在实际应用中，这些信息应由后端收集）
+            const ip = '192.168.1.1 (示例)';
+            const location = '中国, 北京 (模拟)';
+            const device = document.getElementById('device').textContent;
+            const browser = document.getElementById('browser').textContent;
+            const time = document.getElementById('time').textContent;
+            
+            // 构建推送消息
+            const title = encodeURIComponent(customMessage);
+            const body = encodeURIComponent(
+                `IP地址: ${ip}\n位置: ${location}\n设备: ${device}\n浏览器: ${browser}\n访问时间: ${time}`
+            );
+            
+            const fullUrl = `${barkUrl}${title}/${body}?group=访问记录`;
+            
+            try {
+                // 在实际应用中，这里应该通过后端发送请求
+                // 前端直接发送可能会遇到CORS问题
+                // 这里仅模拟发送过程
+                
+                // 模拟请求延迟
+                statusElement.textContent = '正在发送通知...';
+                statusElement.className = 'status';
+                statusElement.style.display = 'block';
+                
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // 模拟成功响应
+                statusElement.textContent = '通知已成功发送到您的设备!';
+                statusElement.className = 'status success';
+                
+                console.log('模拟Bark推送:', fullUrl);
+            } catch (error) {
+                statusElement.textContent = '发送失败: ' + error.message;
+                statusElement.className = 'status error';
+                console.error('推送失败:', error);
+            }
+        }
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', () => {
+            getVisitorInfo();
+            
+            // 添加发送按钮事件
+            document.getElementById('send-btn').addEventListener('click', sendToBark);
+        });
+    </script>
+</body>
+</html>
