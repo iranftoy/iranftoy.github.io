@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>七户小店</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4e54c8;
+            --primary-light: #8f94fb;
+            --secondary: #ff7e5f;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --success: #28a745;
+            --danger: #dc3545;
+            --border-radius: 12px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            padding: 40px;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+        
+        .product-image {
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .product-card:hover .product-image img {
+            transform: scale(1.05);
+        }
+        
+        .product-info {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .product-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+        
+        .product-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+        
+        .product-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+        }
+        
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            background: var(--light);
+            border-radius: 30px;
+            padding: 5px 12px;
+        }
+        
+        .quantity-btn {
+            background: none;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--primary);
+            transition: all 0.2s;
+        }
+        
+        .quantity-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .quantity {
+            margin: 0 12px;
+            font-weight: 600;
+            min-width: 25px;
+            text-align: center;
+        }
+        
+        .add-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 10px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .add-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius);
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow);
+            animation: modalFade 0.3s;
+        }
+        
+        @keyframes modalFade {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark);
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .product-detail-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .product-description {
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .product-specs {
+            margin-top: 20px;
+        }
+        
+        .product-specs h3 {
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .product-specs ul {
+            padding-left: 20px;
+        }
+        
+        .product-specs li {
+            margin-bottom: 8px;
+        }
+        
+        .order-summary {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+        
+        .order-summary h2 {
+            margin-bottom: 20px;
+            color: var(--dark);
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 10px;
+        }
+        
+        .order-items {
+            margin-bottom: 20px;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .order-total {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            font-size: 1.2rem;
+            padding-top: 10px;
+            border-top: 2px solid var(--primary-light);
+        }
+        
+        .order-form {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+        }
+        
+        .order-form h2 {
+            margin-bottom: 20px;
+            color: var(--dark);
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .submit-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .submit-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        
+        .empty-cart {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: var(--success);
+            color: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            z-index: 1100;
+            display: none;
+            animation: slideIn 0.3s;
+        }
+        
+        .payment-notice {
+            background: #e7f3ff;
+            border-left: 4px solid var(--primary);
+            padding: 12px 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .payment-notice i {
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+        
+        .cancel-order-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .cancel-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .cancel-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+        
+        .cancel-confirm-btn {
+            background: var(--danger);
+        }
+        
+        .cancel-confirm-btn:hover {
+            background: #c82333;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @media (max-width: 768px) {
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 15px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>创客七户社の小店</h1>
+            <!-- <p>114514</p> -->
+        </header>
+        
+        <div class="loading" id="loadingMessage">
+            <i class="fas fa-spinner fa-spin"></i> 正在加载商品信息...
+        </div>
+        
+        <div class="products-grid" id="productsGrid" style="display: none;">
+            <!-- 商品将通过JavaScript动态生成 -->
+        </div>
+        
+        <div class="order-summary" id="orderSummary" style="display: none;">
+            <h2>预订清单</h2>
+            <div class="order-items" id="orderItems">
+                <div class="empty-cart">您还没有添加任何商品</div>
+            </div>
+            <div class="order-total">
+                <span>总计：</span>
+                <span id="totalAmount">¥0.00</span>
+            </div>
+        </div>
+        
+        <div class="order-form" id="orderFormContainer" style="display: none;">
+            <!-- 订单表单将通过JavaScript动态生成 -->
+        </div>
+        
+        <div class="cancel-order-section" id="cancelOrderSection" style="display: none;">
+            <!-- 取消订单按钮将通过JavaScript动态生成 -->
+        </div>
+    </div>
+    
+    <!-- 商品详情模态框 -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalProductName">商品名称</h2>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <img id="modalProductImage" src="" alt="" class="product-detail-image">
+                <p class="product-description" id="modalProductDescription">商品描述</p>
+                <div class="product-specs" id="modalProductSpecs">
+                    <h3>商品参数</h3>
+                    <ul id="modalProductSpecList">
+                        <!-- 规格将通过JavaScript动态生成 -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 取消订单模态框 -->
+    <div class="modal" id="cancelOrderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">取消订单</h2>
+                <button class="close-btn" id="closeCancelModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="cancelOrderForm">
+                    <div class="form-group">
+                        <label for="cancelClassName">班级</label>
+                        <select id="cancelClassName" class="form-control" required>
+                            <option value="">请选择班级</option>
+                            <!-- 班级选项将通过JavaScript动态生成 -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1;">
+                            <label for="cancelSeatNumber">座号</label>
+                            <select id="cancelSeatNumber" class="form-control" required>
+                                <option value="">请选择座号</option>
+                                <!-- 座号选项将通过JavaScript动态生成 -->
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" style="flex: 2;">
+                            <label for="cancelStudentName">姓名</label>
+                            <input type="text" id="cancelStudentName" class="form-control" placeholder="请输入您的姓名" required>
+                        </div>
+                    </div>
+                    
+                    <div class="payment-notice">
+                        <i class="fas fa-exclamation-triangle"></i> 确定要取消所有订单吗？此操作不可撤销。
+                    </div>
+                    
+                    <button type="submit" class="submit-btn cancel-confirm-btn">确认取消所有订单</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知 -->
+    <div class="notification" id="notification">预订成功！</div>
+
+    <!-- 商品数据 -->
+    <script>
+        // 商品数据 - 只需在这里配置商品信息
+        const products = [
+            {
+                id: 1,
+                name: "透光浮雕",
+                price: 20.00,
+                image: "sources/lithophane/images/1.jpg",
+                description: "3D打印透光浮雕",
+                specs: ["材质：PLA", "尺寸：150mm * 100mm * 20mm", "电源：5V USB供电"]
+            }
+        ];
+    </script>
+
+    <script>
+        // 购物车数据
+        let cart = [];
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 等待商品数据加载
+            if (typeof products !== 'undefined') {
+                initializeApp();
+            } else {
+                // 如果products未定义，显示错误信息
+                document.getElementById('loadingMessage').innerHTML = 
+                    '<p>无法加载商品数据，请检查products-data.js文件</p>';
+            }
+        });
+
+        // 初始化应用
+        function initializeApp() {
+            // 隐藏加载提示
+            document.getElementById('loadingMessage').style.display = 'none';
+            
+            // 显示商品和表单
+            document.getElementById('productsGrid').style.display = 'grid';
+            document.getElementById('orderSummary').style.display = 'block';
+            document.getElementById('orderFormContainer').style.display = 'block';
+            document.getElementById('cancelOrderSection').style.display = 'block';
+            
+            // 渲染商品
+            renderProducts();
+            updateOrderSummary();
+            
+            // 渲染订单表单
+            renderOrderForm();
+            
+            // 添加取消订单按钮
+            addCancelOrderButton();
+            
+            // 模态框关闭事件
+            document.getElementById('closeModal').addEventListener('click', closeModal);
+            document.getElementById('productModal').addEventListener('click', function(e) {
+                if (e.target === this) closeModal();
+            });
+            
+            // 表单提交事件
+            document.getElementById('orderForm').addEventListener('submit', submitOrder);
+        }
+
+        // 渲染订单表单
+        function renderOrderForm() {
+            const orderFormContainer = document.getElementById('orderFormContainer');
+            
+            // 生成班级选项 (1-16)
+            let classOptions = '';
+            for (let i = 1; i <= 16; i++) {
+                classOptions += `<option value="高一${i}班">高一${i}班</option>`;
+            }
+            for (let i = 1; i <= 16; i++) {
+                classOptions += `<option value="高二${i}班">高二${i}班</option>`;
+            }
+            for (let i = 1; i <= 16; i++) {
+                classOptions += `<option value="高三${i}班">高三${i}班</option>`;
+            }
+            
+            // 生成座号选项 (1-52)
+            let seatOptions = '';
+            for (let i = 1; i <= 52; i++) {
+                seatOptions += `<option value="${i}">${i}</option>`;
+            }
+            
+            orderFormContainer.innerHTML = `
+                <h2>预订信息</h2>
+                <form id="orderForm">
+                    <div class="form-group">
+                        <label for="className">班级</label>
+                        <select id="className" class="form-control" required>
+                            <option value="">请选择班级</option>
+                            ${classOptions}
+                        </select>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1;">
+                            <label for="seatNumber">座号</label>
+                            <select id="seatNumber" class="form-control" required>
+                                <option value="">请选择座号</option>
+                                ${seatOptions}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" style="flex: 2;">
+                            <label for="studentName">姓名</label>
+                            <input type="text" id="studentName" class="form-control" placeholder="请输入您的姓名" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contact">联系方式</label>
+                        <input type="text" id="contact" class="form-control" placeholder="必填" required>
+                    </div>
+                    
+                    <div class="payment-notice">
+                        <i class="fas fa-info-circle"></i> 所有商品均为现场自提后付款
+                    </div>
+
+                    <div class="payment-notice">
+                        <i class="fas fa-info-circle"></i> 如果无法到现场取货 请提前与我们联系
+                    </div>
+
+                    <div class="payment-notice">
+                        <i class="fas fa-info-circle"></i> 创客七户社 联系人： 电话：
+                    </div>
+                    
+
+                    <button type="submit" class="submit-btn">提交预订</button>
+                </form>
+            `;
+        }
+
+        // 渲染商品列表
+        function renderProducts() {
+            const productsGrid = document.getElementById('productsGrid');
+            productsGrid.innerHTML = '';
+            
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    <div class="product-image">
+                        <img src="${product.image}" alt="${product.name}">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">${product.name}</h3>
+                        <div class="product-price">¥${product.price.toFixed(2)}</div>
+                        <div class="product-actions">
+                            <div class="quantity-control">
+                                <button class="quantity-btn minus" onclick="decreaseQuantity(${product.id})">-</button>
+                                <span class="quantity" id="quantity-${product.id}">0</span>
+                                <button class="quantity-btn plus" onclick="increaseQuantity(${product.id})">+</button>
+                            </div>
+                            <button class="add-btn" onclick="showProductDetail(${product.id})">
+                                <i class="fas fa-info-circle"></i> 详情
+                            </button>
+                        </div>
+                    </div>
+                `;
+                productsGrid.appendChild(productCard);
+            });
+        }
+
+        // 增加商品数量
+        function increaseQuantity(productId) {
+            const product = products.find(p => p.id === productId);
+            const cartItem = cart.find(item => item.id === productId);
+            
+            if (cartItem) {
+                cartItem.quantity++;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1
+                });
+            }
+            
+            updateQuantityDisplay(productId);
+            updateOrderSummary();
+        }
+
+        // 减少商品数量
+        function decreaseQuantity(productId) {
+            const cartItem = cart.find(item => item.id === productId);
+            
+            if (cartItem) {
+                cartItem.quantity--;
+                
+                if (cartItem.quantity <= 0) {
+                    cart = cart.filter(item => item.id !== productId);
+                }
+                
+                updateQuantityDisplay(productId);
+                updateOrderSummary();
+            }
+        }
+
+        // 更新商品数量显示
+        function updateQuantityDisplay(productId) {
+            const quantityElement = document.getElementById(`quantity-${productId}`);
+            const cartItem = cart.find(item => item.id === productId);
+            
+            if (quantityElement) {
+                quantityElement.textContent = cartItem ? cartItem.quantity : '0';
+            }
+        }
+
+        // 更新订单摘要
+        function updateOrderSummary() {
+            const orderItems = document.getElementById('orderItems');
+            const totalAmount = document.getElementById('totalAmount');
+            
+            if (cart.length === 0) {
+                orderItems.innerHTML = '<div class="empty-cart">您还没有添加任何商品</div>';
+                totalAmount.textContent = '¥0.00';
+                return;
+            }
+            
+            let itemsHTML = '';
+            let total = 0;
+            
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                itemsHTML += `
+                    <div class="order-item">
+                        <span>${item.name} × ${item.quantity}</span>
+                        <span>¥${itemTotal.toFixed(2)}</span>
+                    </div>
+                `;
+            });
+            
+            orderItems.innerHTML = itemsHTML;
+            totalAmount.textContent = `¥${total.toFixed(2)}`;
+        }
+
+        // 显示商品详情
+        function showProductDetail(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            document.getElementById('modalProductName').textContent = product.name;
+            document.getElementById('modalProductImage').src = product.image;
+            document.getElementById('modalProductImage').alt = product.name;
+            document.getElementById('modalProductDescription').textContent = product.description;
+            
+            const specList = document.getElementById('modalProductSpecList');
+            specList.innerHTML = '';
+            
+            product.specs.forEach(spec => {
+                const li = document.createElement('li');
+                li.textContent = spec;
+                specList.appendChild(li);
+            });
+            
+            document.getElementById('productModal').style.display = 'flex';
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('productModal').style.display = 'none';
+        }
+
+        // 添加取消订单按钮
+        function addCancelOrderButton() {
+            const cancelOrderSection = document.getElementById('cancelOrderSection');
+            
+            cancelOrderSection.innerHTML = `
+                <button class="cancel-btn" id="cancelOrderBtn">
+                    <i class="fas fa-times-circle"></i> 取消原先的所有订单
+                </button>
+            `;
+            
+            // 生成班级选项 (1-16)
+            let classOptions = '';
+            for (let i = 1; i <= 16; i++) {
+                classOptions += `<option value="高一${i}班">高一${i}班</option>`;
+            }
+            for (let i = 1; i <= 16; i++) {
+                classOptions += `<option value="高二${i}班">高二${i}班</option>`;
+            }
+            for (let i = 1; i <= 16; i++) {
+                classOptions += `<option value="高三${i}班">高三${i}班</option>`;
+            }
+            
+            // 生成座号选项 (1-52)
+            let seatOptions = '';
+            for (let i = 1; i <= 52; i++) {
+                seatOptions += `<option value="${i}">${i}</option>`;
+            }
+            
+            // 设置取消订单模态框内容
+            document.getElementById('cancelClassName').innerHTML = `<option value="">请选择班级</option>${classOptions}`;
+            document.getElementById('cancelSeatNumber').innerHTML = `<option value="">请选择座号</option>${seatOptions}`;
+            
+            // 添加事件监听
+            document.getElementById('cancelOrderBtn').addEventListener('click', function() {
+                document.getElementById('cancelOrderModal').style.display = 'flex';
+            });
+            
+            document.getElementById('closeCancelModal').addEventListener('click', function() {
+                document.getElementById('cancelOrderModal').style.display = 'none';
+            });
+            
+            document.getElementById('cancelOrderModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    document.getElementById('cancelOrderModal').style.display = 'none';
+                }
+            });
+            
+            document.getElementById('cancelOrderForm').addEventListener('submit', submitCancelOrder);
+        }
+
+        // 提交取消订单请求
+        function submitCancelOrder(e) {
+            e.preventDefault();
+            
+            const className = document.getElementById('cancelClassName').value;
+            const seatNumber = document.getElementById('cancelSeatNumber').value;
+            const studentName = document.getElementById('cancelStudentName').value;
+            
+            // 构建取消订单信息
+            let cancelMessage = `取消所有订单\n`;
+            cancelMessage += `----------------\n`;
+            cancelMessage += `姓名：${studentName}\n`;
+            cancelMessage += `班级：${className}\n`;
+            cancelMessage += `座号：${seatNumber}\n`;
+            cancelMessage += `----------------\n`;
+            cancelMessage += `取消时间：${new Date().toLocaleString()}`;
+            
+            // 发送到ntfy
+            sendToNtfy(cancelMessage);
+            
+            // 显示成功通知
+            showNotification('订单取消成功！');
+            
+            // 关闭模态框并重置表单
+            document.getElementById('cancelOrderModal').style.display = 'none';
+            document.getElementById('cancelOrderForm').reset();
+        }
+
+        // 提交订单
+        function submitOrder(e) {
+            e.preventDefault();
+            
+            if (cart.length === 0) {
+                showNotification('请先添加商品到购物车');
+                return;
+            }
+            
+            const className = document.getElementById('className').value;
+            const seatNumber = document.getElementById('seatNumber').value;
+            const studentName = document.getElementById('studentName').value;
+            const contact = document.getElementById('contact').value;
+            
+            // 构建订单信息
+            let orderMessage = `----------------\n`;
+            orderMessage += `姓名：${studentName}\n`;
+            orderMessage += `班级：${className}\n`;
+            orderMessage += `座号：${seatNumber}\n`;
+            orderMessage += `联系方式：${contact}\n`;
+            orderMessage += `----------------\n`;
+            orderMessage += `订单详情：\n`;
+            
+            let total = 0;
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                orderMessage += `- ${item.name} × ${item.quantity} = ¥${itemTotal.toFixed(2)}\n`;
+            });
+            
+            orderMessage += `----------------\n`;
+            orderMessage += `总计：¥${total.toFixed(2)}\n`;
+            orderMessage += `下单时间：${new Date().toLocaleString()}`;
+            
+            // 发送到ntfy
+            sendToNtfy(orderMessage);
+            
+            // 显示成功通知
+            showNotification('预订成功！订单已发送');
+            
+            // 重置表单和购物车
+            document.getElementById('orderForm').reset();
+            cart = [];
+            updateOrderSummary();
+            products.forEach(product => updateQuantityDisplay(product.id));
+        }
+
+        // 发送到ntfy
+        function sendToNtfy(message) {
+            // 请替换为您的ntfy主题
+            const ntfyTopic = '7h-market';
+            
+            fetch(`https://ntfy.sh/${ntfyTopic}`, {
+                method: 'POST',
+                body: message,
+                headers: {
+                    'Title': 'New Order Notification',
+                    'Priority': 'high',
+                    'Tags': 'shopping_cart'
+                }
+            }).catch(error => {
+                console.error('发送到ntfy失败:', error);
+            });
+        }
+
+        // 显示通知
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
